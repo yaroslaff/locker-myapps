@@ -191,7 +191,7 @@ class Locker {
     }
 
     get_json_file(path, code){
-        fetch(this.base_url + path, {credentials: 'include'})
+        return fetch(this.base_url + path, {credentials: 'include'})
         .then( r => {
             return r.json()
         })
