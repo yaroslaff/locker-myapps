@@ -31,17 +31,21 @@ window.onload = async () => {
 function create_app(){
   appname = document.getElementById("new_app_name").value
   console.log('create app', appname)
-  locker.post('~/rw/create.json', {
+  locker.post('~/rw/requests.json', {
     action: 'append',
     default: [],
     e: {
       'name': appname,
+      'command': 'create_app',
       '_timestamp': null
     }
   }).then( r => {
     locker.set_flag('updated')
     .then(r => {
       console.log("sent request to create application")
+      
+      // update table
+      draw_create_requests()
     })
   })
 }
@@ -49,6 +53,7 @@ function create_app(){
 async function load_data(){
   draw_profile()
   draw_create_requests()
+  draw_apps()
 }
 
 function draw_profile(){
@@ -57,7 +62,66 @@ function draw_profile(){
 
 
 function render_create_request(app){
+
+  const status = 'Pending'
+  const details = 'Waiting to be created'
+
   console.log(app.name)
+
+
+  return `
+      <tr class="text-gray-700 dark:text-gray-400">
+      <td class="px-4 py-3">
+        <div class="flex items-center text-sm">
+          <div>
+            <p class="font-semibold">${app.name}</p>
+            <p class="text-xs text-gray-600 dark:text-gray-400">
+              ${app.subtitle}
+            </p>
+          </div>
+        </div>
+      </td>
+      <td class="px-4 py-3 text-xs">
+        <span
+          class="px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full dark:bg-green-700 dark:text-green-100"
+        >
+          ${status}
+        </span>
+      </td>
+      <td class="px-4 py-3 text-sm">
+        ${details}
+      </td>
+      <td class="px-4 py-3">
+        <div class="flex items-center space-x-4 text-sm">
+          <button
+            class="flex items-center justify-between px-2 py-2 text-sm font-medium leading-5 text-purple-600 rounded-lg dark:text-gray-400 focus:outline-none focus:shadow-outline-gray"
+            aria-label="Delete"
+          >
+            <svg
+              class="w-5 h-5"
+              aria-hidden="true"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                clip-rule="evenodd"
+              ></path>
+            </svg>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `
+}
+
+function render_app(app){
+  console.log(app.name)
+
+  const status = 'Pending'
+  const details = 'Waiting to be created'
+
   return `
       <tr class="text-gray-700 dark:text-gray-400">
       <td class="px-4 py-3">
@@ -120,11 +184,15 @@ function render_create_request(app){
   `
 }
 
+
+
+
+
 function draw_create_requests(){
 
-  e = document.getElementById('applications-tbody')
+  const e = document.getElementById('requests-tbody')
 
-  locker.get('~/rw/create.json')
+  locker.get('~/rw/requests.json')
     .then( r => { 
       if (!r.ok) {
         // make the promise be rejected if we didn't get a 2xx response
@@ -133,20 +201,25 @@ function draw_create_requests(){
       return r.json() } )
     .then( r => {
       console.log("create: %o", r)
+      e.innerHTML = ''
+
       r.forEach(req => {
         const app = {
           'name': req.name, 
-          'status': 'pending',
-          'details': 'waiting to be created'
         }
-        console.log("draw: %o %o", app, e)
+        console.log("draw request: %o", app)
         e.innerHTML += render_create_request(app)
       });
     })
     .catch( e => {
       console.log("ERR: %o", e)
     })
+}
 
+
+function draw_apps(){
+
+  const e = document.getElementById('apps-tbody')
 
   locker.get('~/r/apps.json')
   .then( r => { 
@@ -156,22 +229,19 @@ function draw_create_requests(){
     }
     return r.json() } )
   .then( r => {
-    console.log("create: %o", r)
+    //console.log("create: %o", r)
+    e.innerHTML = ''
 
     for(let name in r){
       app = r[name]
-      console.log("draw: %o %o", app, e)
-      e.innerHTML += render_create_request(app)
+      // console.log("draw: %o %o", app, e)
+      e.innerHTML += render_app(app)
     }
   })
   .catch( e => {
     console.log("ERR: %o", e)
   })
-
-
-
 }
-
 
 async function logout(){
   locker.logout()
