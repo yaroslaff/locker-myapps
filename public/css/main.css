@@ -20,3 +20,16 @@ label {
 .locker-authenticating {
   display: none;
 }
+/*
+#app-requests-title {
+  display: none;
+}
+
+#app-requests-div {
+  display: none;
+}
+*/
+
+.locker-app-requests {
+  display: none;
+}

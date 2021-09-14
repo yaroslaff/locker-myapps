@@ -17,8 +17,14 @@ class Locker {
     }
 
 
-    logout(){
-        fetch(this.base_url + 'logout', {method: 'POST', credentials: 'include'})
+    url(path){
+        var url = new URL(path, this.base_url)
+        return url.href
+    }
+
+
+    async logout(){
+        return fetch(this.base_url + 'logout', {method: 'POST', credentials: 'include'})
         .then( r => {
             if(r.status == 200){
                 this.set_authenticated(false)
@@ -33,11 +39,6 @@ class Locker {
         .catch(e => {
             console.log("logout error", e)
         })
-    }
-
-    url(path){
-        var url = new URL(path, this.base_url)
-        return url.href
     }
 
     update_page(){

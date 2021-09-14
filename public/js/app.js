@@ -22,14 +22,21 @@ window.onload = async () => {
   //locker.hook_after_login = load_data
   //document.getElementById('authentication').style.display = 'block'
   s = await locker.check_login()
+  
+  // maybe redirect?
   check_and_redirect(s)
   
-  // here we're logged in
-  load_data()
+  if(window.location.pathname == '/dashboard.html'){
+    // here we're logged in
+    load_data()
+  }
 }
 
 function create_app(){
-  appname = document.getElementById("new_app_name").value
+  field = document.getElementById("new_app_name")
+  appname = field.value
+  field.value = null
+
   console.log('create app', appname)
   locker.post('~/rw/requests.json', {
     action: 'append',
@@ -37,7 +44,8 @@ function create_app(){
     e: {
       'name': appname,
       'command': 'create_app',
-      '_timestamp': null
+      '_timestamp': null,
+      '_id': null,
     }
   }).then( r => {
     locker.set_flag('updated')
@@ -60,13 +68,17 @@ function draw_profile(){
   locker.get_json_file('~/r/userinfo.json', p => {console.log("profile: %o", p)})
 }
 
+function DisplayByClass(classname, display){
+
+  els = document.getElementsByClassName(classname)
+  Array.prototype.forEach.call(els, 
+    (e) => {e.style.display=display})
+}
 
 function render_create_request(app){
 
   const status = 'Pending'
   const details = 'Waiting to be created'
-
-  console.log(app.name)
 
 
   return `
@@ -117,7 +129,6 @@ function render_create_request(app){
 }
 
 function render_app(app){
-  console.log(app.name)
 
   const status = 'Pending'
   const details = 'Waiting to be created'
@@ -200,19 +211,19 @@ function draw_create_requests(){
       }
       return r.json() } )
     .then( r => {
-      console.log("create: %o", r)
       e.innerHTML = ''
 
       r.forEach(req => {
         const app = {
           'name': req.name, 
         }
-        console.log("draw request: %o", app)
         e.innerHTML += render_create_request(app)
       });
+      DisplayByClass('locker-app-requests', 'block')
     })
     .catch( e => {
       console.log("ERR: %o", e)
+      DisplayByClass('locker-app-requests', 'none')
     })
 }
 
@@ -244,7 +255,7 @@ function draw_apps(){
 }
 
 async function logout(){
-  locker.logout()
+  r = await locker.logout()
   window.location.href = '/login.html'
 }
 

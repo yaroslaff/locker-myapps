@@ -4,11 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Locker</title>
+    <link rel="stylesheet" href="./css/main.css" />
+
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./assets/css/tailwind.output.css" />
+
+
     <script
       src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js"
       defer
@@ -523,12 +527,16 @@
           <div class="container px-6 mx-auto grid">
 
             <h4
-              class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300"
+              id="app-requests-title"
+              class="mb-4 text-lg font-semibold text-gray-600 dark:text-gray-300 locker-app-requests"
             >
               Your requests
             </h4>
 
-            <div class="w-full overflow-hidden rounded-lg shadow-xs">
+            <div
+              id="app-requests-div" 
+              class="w-full overflow-hidden rounded-lg shadow-xs locker-app-requests"
+            >
               <div class="w-full overflow-x-auto">
                 <table class="w-full whitespace-no-wrap">
                   <thead>
