@@ -38,16 +38,16 @@ function create_app(){
   field.value = null
 
   console.log('create app', appname)
-  locker.post('~/rw/requests.json', {
-    action: 'append',
-    default: [],
-    e: {
+
+  locker.list_append('~/rw/requests.json',
+    {
       'name': appname,
       'command': 'create_app',
       '_timestamp': null,
       '_id': null,
-    }
-  }).then( r => {
+    }  
+  )
+  .then( r => {
     locker.set_flag('updated')
     .then(r => {
       console.log("sent request to create application")
@@ -203,16 +203,26 @@ function draw_create_requests(){
 
   const e = document.getElementById('requests-tbody')
 
+  console.log("get requests")
   locker.get('~/rw/requests.json')
     .then( r => { 
+      console.log("the requests", r.ok)
       if (!r.ok) {
-        // make the promise be rejected if we didn't get a 2xx response
-        throw new Error("Not 2xx response")
+        console.log(r)
+        if(r.status == 404){
+          // default
+          console.log("requests 404 branch")
+          return [];
+        }else{
+          // make the promise be rejected if we didn't get a 2xx response
+          throw new Error("Not 2xx/404 response")
+        }
       }
       return r.json() } )
     .then( r => {
       e.innerHTML = ''
 
+      console.log("iterate requests....")
       r.forEach(req => {
         const app = {
           'name': req.name, 
