@@ -48,6 +48,15 @@ Add your website URL to `origins`: `locker-admin edit etc/options.json`. Example
 ~~~
 Make sure there MUST be NO trailing slash in origins.
 
+### Manual run
+make request to create app from web UI, then:
+~~~
+sudo -u www-data bin/myapps.py --one -v
+~~~
+
+### run app client-side (daemon? systemd)
+
+### TODO: integration with ws-emit
 
 ### Start development webserver
 Run server:

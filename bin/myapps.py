@@ -3,6 +3,7 @@
 import argparse
 from locker_client import LockerClient
 import os
+import sys
 from dotenv import load_dotenv
 import subprocess
 import string
@@ -11,12 +12,11 @@ import random
 import requests
 import datetime
 import json
+from loguru import logger as log
 
 from requests.api import request
 
 locker = None
-
-
 
 def gen_key(length=40):
     alphabet = string.ascii_lowercase + string.ascii_uppercase + string.digits
@@ -25,6 +25,7 @@ def gen_key(length=40):
 
 
 def run():
+    log.debug("Run...")
     print("Run!", locker)
     flags = locker.get_flags('/var/flags.json', 'updated')
 
@@ -33,7 +34,7 @@ def run():
         print(u, ts)
 
         # get requests
-        r = locker.get(f'/home/{u}/rw/create.json')
+        r = locker.get(f'/home/{u}/rw/requests.json')
         create_requests = r.json()
 
         # get app list
@@ -72,7 +73,7 @@ def run():
             applist[app_name] = app
 
         # update create requests
-        r = locker.put(f'/home/{u}/rw/create.json', '[]')
+        r = locker.put(f'/home/{u}/rw/requests.json', '[]')
 
         # update applist
         r = locker.put(f'/home/{u}/r/apps.json', json.dumps(applist, indent=4))
@@ -105,15 +106,26 @@ def get_args():
         help='Your locker hostname: $LOCKER_HOST={}'.format(def_host))
     g.add_argument('--insecure-ssl', default=False, action='store_true',
         help=f'Do not verify server-side certificate')
+    g.add_argument('--verbose', '-v', action='store_true',  default=False,
+        help='Verbose mode')
 
     return parser.parse_args()
 
 
 def main():
 
-    global locker
+    global locker, log
 
     args = get_args()
+
+    log.remove()
+    if args.verbose:
+        log.add(sys.stderr, colorize=True, format="{time:HH:MM:SS} <green>{message}</green>", level="DEBUG")
+    else:
+        log.add(sys.stderr, colorize=True, format="{time:HH:MM:SS} <green>{message}</green>", level="INFO")
+    log.debug("verbose mode")
+
+
 
     locker = LockerClient(host=args.host, key=args.key, insecure=args.insecure_ssl)
 
