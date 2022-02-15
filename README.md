@@ -56,7 +56,39 @@ sudo -u www-data bin/myapps.py --one -v
 
 ### run app client-side (daemon? systemd)
 
-### TODO: integration with ws-emit
+### integration with ws-emit
+
+#### Option 1: Websocket
+~~~
+bin/myapps.py --hook ws room=myapps
+~~~
+etc/options.json:
+~~~
+"flag-options": {
+    "flags.json": {
+        "notify": "socketio",
+        "room": "myapps",
+        "data": "flag updated"
+	}
+}
+~~~
+
+#### Option 2: Redis
+~~~
+bin/myapps.py --hook redis
+~~~
+
+etc/options.json:
+~~~
+"flag-options": {
+    "flags.json": {
+		"notify": "redis:publish",
+		"channel": "sleep",
+	}
+}
+~~~
+
+
 
 ### Start development webserver
 Run server:
