@@ -7,6 +7,8 @@ class Locker {
         this.authenticated = false
         this.authenticated_cachetime = 60
 
+        this.preload = {}
+
         /* App may override this */
         /* ... options */
         this.return_url = window.location
@@ -17,14 +19,8 @@ class Locker {
     }
 
 
-    url(path){
-        var url = new URL(path, this.base_url)
-        return url.href
-    }
-
-
-    async logout(){
-        return fetch(this.base_url + 'logout', {method: 'POST', credentials: 'include'})
+    logout(){
+        fetch(this.base_url + 'logout', {method: 'POST', credentials: 'include'})
         .then( r => {
             if(r.status == 200){
                 this.set_authenticated(false)
@@ -39,6 +35,34 @@ class Locker {
         .catch(e => {
             console.log("logout error", e)
         })
+    }
+
+    url(path){
+        var url = new URL(path, this.base_url)
+        return url.href
+    }
+
+    get_pubconf(){
+        return this.get('/pubconf')
+            .then( r => r.json() )     
+            .then( pubconf => this.pubconf = pubconf)       
+    }
+    
+
+    preload_json_file(file){
+        return this.get(file)
+            .then( r => r.json() )     
+            .then( data => this.preload[file] = data)       
+    }
+
+    preload_json_files(elements=null){
+        if(elements==null){
+            console.log("use default elements")
+            elements = ['/pubconf', '~/r/userinfo.json']
+        }
+        let promises = []
+        elements.forEach( e => promises.push(this.preload_json_file(e)))
+        return Promise.all(promises)
     }
 
     update_page(){
@@ -129,18 +153,17 @@ class Locker {
                 messages: ['Reuse cached value from localStorage'],
                 status: true
             }
+            this.authenticated = true
         }else{
             /* temporary set null to draw progress */
             this.set_authenticated(null)
             login_status = await this.check_authenticated()
             this.set_authenticated(login_status.status)
         }
+        this.update_page()
 
         if(this.hook_after_check_login){
             this.hook_after_check_login(login_status)
-        }else{
-            //console.log(this.authenticated)
-            this.update_page()
         }
 
         return login_status
@@ -148,11 +171,11 @@ class Locker {
     
 
     get(path){
-        return fetch(this.base_url + path, {credentials: 'include'})
+        return fetch(this.url(path), {credentials: 'include'})
     }
 
     put(path, data){
-        return fetch(this.base_url + path, 
+        return fetch(this.url(path), 
             {
                 credentials: 'include', 
                 method: 'PUT', 
@@ -171,6 +194,21 @@ class Locker {
                 body: JSON.stringify(data)
             })
     }
+
+    list_append(path, e){
+        return this.post(path, {
+            action: 'list_append',
+            e: e
+          })        
+    }
+
+    list_delete(path, _id){
+        return this.post(path, {
+            action: 'list_append',
+            _id: _id
+          })        
+    }
+
 
     set_flag(flag, path='/var/flags.json'){
 
@@ -192,7 +230,7 @@ class Locker {
     }
 
     get_json_file(path, code){
-        return fetch(this.base_url + path, {credentials: 'include'})
+        fetch(this.base_url + path, {credentials: 'include'})
         .then( r => {
             return r.json()
         })

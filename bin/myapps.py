@@ -12,7 +12,13 @@ import random
 import requests
 import datetime
 import json
+
+from flask_socketio import SocketIO
+
 from loguru import logger as log
+
+
+from lightsleep import Sleep
 
 from requests.api import request
 
@@ -28,10 +34,11 @@ def run():
     log.debug("Run...")
     print("Run!", locker)
     flags = locker.get_flags('/var/flags.json', 'updated')
+    userlist = set()
 
     droplist = []
     for u, ts in flags:
-        print(u, ts)
+        print(u, ts)        
 
         # get requests
         r = locker.get(f'/home/{u}/rw/requests.json')
@@ -47,7 +54,6 @@ def run():
             print(r)
             print(r.text)
             applist = r.json()
-
 
         print(r)
         print(r.json)
@@ -78,13 +84,13 @@ def run():
         # update applist
         r = locker.put(f'/home/{u}/r/apps.json', json.dumps(applist, indent=4))
         droplist.append([u, ts])
-            
 
-
+        userlist.add(u)
 
     print(droplist)
     result = locker.drop_flags('/var/flags.json', 'updated', droplist)
     print(result)
+    return userlist
 
 def get_args():
 
@@ -92,12 +98,24 @@ def get_args():
 
     def_key = os.getenv('LOCKER_KEY', None)
     def_host = os.getenv('LOCKER_HOST', None)
+    def_event = 'update'
+    def_room = 'myapps-{u}'
+    def_message=''
+
 
     parser = argparse.ArgumentParser(description='Locker admin')
 
     g = parser.add_argument_group('Commands')
     g.add_argument('--one', default=False, 
         action='store_true', help='one run')
+
+    g = parser.add_argument_group('Websocket event')
+    g.add_argument('--event', metavar='EVENT', default=def_event,
+        help=f'websocket event name. def: {def_event}')
+    g.add_argument('--room', metavar='ROOM', default=def_room,
+        help=f'websocket room name. def: {def_room}')
+    g.add_argument('--message', metavar='MESSAGE', default=def_message,
+        help=f'message text {def_message}')
 
     g = parser.add_argument_group('Options')
     g.add_argument('--key', metavar='KEY', default=def_key,
@@ -108,6 +126,9 @@ def get_args():
         help=f'Do not verify server-side certificate')
     g.add_argument('--verbose', '-v', action='store_true',  default=False,
         help='Verbose mode')
+    g.add_argument('--hook', nargs='+', metavar=('METHOD', 'ARG'), help='lightsleep-hook with arguments')
+
+
 
     return parser.parse_args()
 
@@ -117,6 +138,8 @@ def main():
     global locker, log
 
     args = get_args()
+
+    s = Sleep(hook=args.hook)
 
     log.remove()
     if args.verbose:
@@ -131,6 +154,15 @@ def main():
 
     if args.one:
         run()
+    else:
+        socketio = SocketIO(message_queue="redis://")
+        while True:
+            userlist = run()
+            for u in userlist:
+                roomname = args.room.format(u=u)
+                print(f"notify user {u} in {roomname}")
+                socketio.emit(args.event, args.message, room=roomname)
+            s.sleep(300)
 
 if __name__ == '__main__':
     main()

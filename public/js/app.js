@@ -22,7 +22,7 @@ window.onload = async () => {
   //locker.hook_after_login = load_data
   //document.getElementById('authentication').style.display = 'block'
   s = await locker.check_login()
-  
+
   // maybe redirect?
   check_and_redirect(s)
   
@@ -50,8 +50,7 @@ function create_app(){
   .then( r => {
     locker.set_flag('updated')
     .then(r => {
-      console.log("sent request to create application")
-      
+      console.log("sent request to create application")      
       // update table
       draw_create_requests()
     })
@@ -59,13 +58,38 @@ function create_app(){
 }
 
 async function load_data(){
+
+  locker.preload_json_files(['/pubconf','~/r/userinfo.json']).then(
+    () => {
+
+        var socket = io(locker.preload['/pubconf']['socketio_addr']);
+        let roomname = "myapps-" + locker.preload['~/r/userinfo.json']['id']
+
+        socket.on('connect', function (){
+          socket.emit('join', {room: roomname})
+        })
+        
+        socket.on('update', function(msg, cb){
+          draw_create_requests()
+          draw_apps()
+        })      
+    }
+  )
+  
+
+
+
+
+
+
   draw_profile()
   draw_create_requests()
   draw_apps()
 }
 
 function draw_profile(){
-  locker.get_json_file('~/r/userinfo.json', p => {console.log("profile: %o", p)})
+  locker.get_json_file('~/r/userinfo.json', p => {
+    console.log("profile: %o", p)})
 }
 
 function DisplayByClass(classname, display){
@@ -203,10 +227,8 @@ function draw_create_requests(){
 
   const e = document.getElementById('requests-tbody')
 
-  console.log("get requests")
   locker.get('~/rw/requests.json')
     .then( r => { 
-      console.log("the requests", r.ok)
       if (!r.ok) {
         console.log(r)
         if(r.status == 404){
@@ -222,7 +244,6 @@ function draw_create_requests(){
     .then( r => {
       e.innerHTML = ''
 
-      console.log("iterate requests....")
       r.forEach(req => {
         const app = {
           'name': req.name, 
