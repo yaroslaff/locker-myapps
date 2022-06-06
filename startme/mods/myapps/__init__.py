@@ -1,4 +1,3 @@
-from rich import inspect
 from startme import StartMeThread
 from myapps import loop
 import os
