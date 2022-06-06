@@ -12,7 +12,7 @@ class StartMeMyApps(StartMeThread):
         hook = os.getenv('MYAPPS_HOOK', 'redis').split(' ')
         event = os.getenv('MYAPPS_EVENT')
         message = os.getenv('MYAPPS_MESSAGE')
-        room = os.getenv('MYAPPS_ROOM')
+        room = os.getenv('MYAPPS_ROOM', 'myapps-{u}')
 
         print("startmemyapps!")
         print("hook", hook)
