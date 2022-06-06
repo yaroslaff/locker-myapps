@@ -2,6 +2,14 @@
 
 Application manager for locker. This is main app where users of locker server create their applications.
 
+## Install
+Better to install inside virtualenv of locker-server
+
+~~~
+.  /opt/venv/locker-server/bin/activate
+pip3 install git+https://github.com/yaroslaff/locker-myapps
+~~~
+
 ## Quickstart
 
 ### Create app on locker server 
@@ -18,6 +26,9 @@ sudo -u www-data locker-admin create my notebook
 # LOCKER_HOST is APP_NAME-USER.YOURDOMAIN
 LOCKER_HOST=apps-my.ll.www-security.net
 LOCKER_KEY=<Your key here>
+
+export LOCKER_HOST
+export LOCKER_KEY
 ~~~
 
 Now, all further `locker-admin` commands require either LOCKER_KEY and LOCKER_HOST env variables, or must be run in directory with this `.env` file.
@@ -31,9 +42,9 @@ var/                                                        DIR mt:1640712673.84
 etc/                                                        DIR mt:1640712673.841365
 ~~~
 
-deploy app:
+deploy app (from virtualenv):
 ~~~
-locker-admin deploy
+locker-admin deploy $VIRTUAL_ENV/locker_myapps/
 ~~~
 
 ### Configure application
@@ -60,7 +71,7 @@ sudo -u www-data bin/myapps.py --one -v
 
 #### Option 1: Websocket
 ~~~
-bin/myapps.py --hook ws room=myapps
+bin/myapps.py --hook ws room=myapps url=https://rudev.www-security.net:8899/
 ~~~
 etc/options.json:
 ~~~

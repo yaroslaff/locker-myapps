@@ -24,8 +24,10 @@ def generate_data_files(appname, data_dirs):
 setup(
     name='locker-myapps',
     version='0.0.1',
-    scripts=['bin/myapps.py'],
-
+    scripts=['bin/myapps'],
+    packages=[
+        'myapps',
+        'startme.mods.myapps'],
     install_requires=[
         'requests',
         'loguru',

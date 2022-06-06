@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
+from loguru import logger as log
+import requests
 
-import argparse
 from locker_client import LockerClient
 import os
 import sys
@@ -15,12 +15,13 @@ import json
 
 from flask_socketio import SocketIO
 
-from loguru import logger as log
 
 
 from lightsleep import Sleep
 
 from requests.api import request
+
+
 
 locker = None
 
@@ -92,77 +93,31 @@ def run():
     print(result)
     return userlist
 
-def get_args():
-
-    load_dotenv(dotenv_path='.env')
-
-    def_key = os.getenv('LOCKER_KEY', None)
-    def_host = os.getenv('LOCKER_HOST', None)
-    def_event = 'update'
-    def_room = 'myapps-{u}'
-    def_message=''
 
 
-    parser = argparse.ArgumentParser(description='Locker admin')
+def loop(host, key, verbose=False, one=False, hook=None, event=None, message=None, room=None, insecure=False):
+    global locker
 
-    g = parser.add_argument_group('Commands')
-    g.add_argument('--one', default=False, 
-        action='store_true', help='one run')
-
-    g = parser.add_argument_group('Websocket event')
-    g.add_argument('--event', metavar='EVENT', default=def_event,
-        help=f'websocket event name. def: {def_event}')
-    g.add_argument('--room', metavar='ROOM', default=def_room,
-        help=f'websocket room name. def: {def_room}')
-    g.add_argument('--message', metavar='MESSAGE', default=def_message,
-        help=f'message text {def_message}')
-
-    g = parser.add_argument_group('Options')
-    g.add_argument('--key', metavar='KEY', default=def_key,
-        help='Use this X-API-KEY header: $LOCKER_API_KEY={}'.format(def_key))
-    g.add_argument('--host', metavar='HOST', default=def_host,
-        help='Your locker hostname: $LOCKER_HOST={}'.format(def_host))
-    g.add_argument('--insecure-ssl', default=False, action='store_true',
-        help=f'Do not verify server-side certificate')
-    g.add_argument('--verbose', '-v', action='store_true',  default=False,
-        help='Verbose mode')
-    g.add_argument('--hook', nargs='+', metavar=('METHOD', 'ARG'), help='lightsleep-hook with arguments')
-
-
-
-    return parser.parse_args()
-
-
-def main():
-
-    global locker, log
-
-    args = get_args()
-
-    s = Sleep(hook=args.hook)
+    locker = LockerClient(host=host, key=key, insecure=insecure)
 
     log.remove()
-    if args.verbose:
+    if verbose:
         log.add(sys.stderr, colorize=True, format="{time:HH:MM:SS} <green>{message}</green>", level="DEBUG")
     else:
         log.add(sys.stderr, colorize=True, format="{time:HH:MM:SS} <green>{message}</green>", level="INFO")
     log.debug("verbose mode")
 
 
+    s = Sleep(hook=hook)
 
-    locker = LockerClient(host=args.host, key=args.key, insecure=args.insecure_ssl)
-
-    if args.one:
+    if one:
         run()
     else:
         socketio = SocketIO(message_queue="redis://")
         while True:
             userlist = run()
             for u in userlist:
-                roomname = args.room.format(u=u)
+                roomname = room.format(u=u)
                 print(f"notify user {u} in {roomname}")
-                socketio.emit(args.event, args.message, room=roomname)
+                socketio.emit(event, message, room=roomname)
             s.sleep(300)
-
-if __name__ == '__main__':
-    main()

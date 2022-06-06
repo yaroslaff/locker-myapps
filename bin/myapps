@@ -1,0 +1,78 @@
+#!/usr/bin/env python3
+
+import argparse
+from locker_client import LockerClient
+import os
+import sys
+from dotenv import load_dotenv
+import subprocess
+import string
+import time
+import random
+import requests
+import datetime
+import json
+
+from flask_socketio import SocketIO
+
+
+
+from lightsleep import Sleep
+
+from requests.api import request
+
+from myapps import loop
+
+
+def get_args():
+
+    load_dotenv(dotenv_path='.env')
+
+    def_key = os.getenv('LOCKER_KEY', None)
+    def_host = os.getenv('LOCKER_HOST', None)
+    def_event = 'update'
+    def_room = 'myapps-{u}'
+    def_message=''
+
+
+    parser = argparse.ArgumentParser(description='Locker admin')
+
+    g = parser.add_argument_group('Commands')
+    g.add_argument('--one', default=False, 
+        action='store_true', help='one run')
+
+    g = parser.add_argument_group('Websocket event')
+    g.add_argument('--event', metavar='EVENT', default=def_event,
+        help=f'websocket event name. def: {def_event}')
+    g.add_argument('--room', metavar='ROOM', default=def_room,
+        help=f'websocket room name. def: {def_room}')
+    g.add_argument('--message', metavar='MESSAGE', default=def_message,
+        help=f'message text {def_message}')
+
+    g = parser.add_argument_group('Options')
+    g.add_argument('--key', metavar='KEY', default=def_key,
+        help='Use this X-API-KEY header: $LOCKER_API_KEY={}'.format(def_key))
+    g.add_argument('--host', metavar='HOST', default=def_host,
+        help='Your locker hostname: $LOCKER_HOST={}'.format(def_host))
+    g.add_argument('--insecure-ssl', default=False, action='store_true',
+        help=f'Do not verify server-side certificate')
+    g.add_argument('--verbose', '-v', action='store_true',  default=False,
+        help='Verbose mode')
+    g.add_argument('--hook', nargs='+', metavar=('METHOD', 'ARG'), help='lightsleep-hook with arguments')
+
+
+
+    return parser.parse_args()
+
+
+def main():
+
+    global locker, log
+
+    args = get_args()
+
+    loop(host = args.host, key = args.key, verbose=args.verbose, insecure=args.insecure_ssl, 
+        one=args.one, hook=args.hook, event=args.event, message=args.message, room=args.room)
+
+if __name__ == '__main__':
+    main()
