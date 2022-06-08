@@ -10,6 +10,12 @@ Better to install inside virtualenv of locker-server
 pip3 install git+https://github.com/yaroslaff/locker-myapps
 ~~~
 
+If [startme](https://github.com/yaroslaff/startme) is installed inside locker virtualenv, it wull be started automatically with startme. Add myapps variables to `/etc/default/startme-locker` like this:
+~~~
+MYAPPS_HOST=myapps.l.www-security.com
+MYAPPS_KEY=MySecretKey
+~~~
+
 ## Quickstart
 
 ### Create app on locker server 
