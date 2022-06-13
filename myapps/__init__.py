@@ -31,7 +31,7 @@ def gen_key(length=40):
     return key
 
 
-def run():
+def run(locker):
     log.debug("Run...")
     print("Run!", locker)
     flags = locker.get_flags('/var/flags.json', 'updated')
@@ -85,12 +85,12 @@ def run():
         # update applist
         r = locker.put(f'/home/{u}/r/apps.json', json.dumps(applist, indent=4))
         droplist.append([u, ts])
-
+        
         userlist.add(u)
 
     print(droplist)
     result = locker.drop_flags('/var/flags.json', 'updated', droplist)
-    print(result)
+    print(result)    
     return userlist
 
 
@@ -121,3 +121,4 @@ def loop(host, key, verbose=False, one=False, hook=None, event=None, message=Non
                 print(f"notify user {u} in {roomname}")
                 socketio.emit(event, message, room=roomname)
             s.sleep(300)
+

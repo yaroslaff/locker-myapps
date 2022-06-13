@@ -1,4 +1,5 @@
 from startme import StartMe
+from locker_client import LockerClient
 from myapps import run
 import os
 from flask_socketio import SocketIO
@@ -18,6 +19,9 @@ class StartMeMyApps(StartMe):
         self.period = 60
         self.socketio = SocketIO(message_queue="redis://")
 
+        self.locker = LockerClient(host=self.host, key=self.key, insecure=self.insecure)
+
+
         #print(f"{self}: {self.host=} {self.hook=} {self.event=} {self.message=} {self.room=}")
         #loop(host = host, key = key, verbose=verbose, insecure=insecure, 
         #    one=False, hook=hook, event=event, message=message, room=room)
@@ -31,7 +35,7 @@ class StartMeMyApps(StartMe):
     
     def run(self):
         while True:
-            userlist = run()
+            userlist = run(self.locker)
             for u in userlist:
                 roomname = self.room.format(u=u)
                 print(f"notify user {u} in {roomname}")
