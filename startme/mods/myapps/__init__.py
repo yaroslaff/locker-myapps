@@ -34,9 +34,8 @@ class StartMeMyApps(StartMe):
         self.run()
     
     def run(self):
-        while True:
-            userlist = run(self.locker)
-            for u in userlist:
-                roomname = self.room.format(u=u)
-                print(f"notify user {u} in {roomname}")
-                self.socketio.emit(self.event, self.message, room=roomname)
+        userlist = run(self.locker)
+        for u in userlist:
+            roomname = self.room.format(u=u)
+            print(f"notify user {u} in {roomname}")
+            self.socketio.emit(self.event, self.message, room=roomname)
