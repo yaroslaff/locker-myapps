@@ -37,10 +37,9 @@ class StartMeMyApps(StartMe):
         #    one=False, hook=hook, event=event, message=message, room=room)
 
     def on_start(self):
-        print(self, "on_start()")
+        pass
 
     def on_schedule(self):
-        print(self, "on_schedule()")
         self.run()
     
     def run(self):

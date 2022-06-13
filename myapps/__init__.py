@@ -32,7 +32,7 @@ def gen_key(length=40):
 
 
 def run(locker):
-    log.debug(f"Run... {locker}")
+    print(f"Run... {locker}")
     flags = locker.get_flags('/var/flags.json', 'updated')
     userlist = set()
 
@@ -51,12 +51,7 @@ def run(locker):
             if e.response.status_code == 404:
                 applist = dict()
         else:
-            print(r)
-            print(r.text)
             applist = r.json()
-
-        print(r)
-        print(r.json)
 
         for req in create_requests:
             app_name = req['name'].lower()
@@ -87,9 +82,7 @@ def run(locker):
         
         userlist.add(u)
 
-    print(droplist)
     result = locker.drop_flags('/var/flags.json', 'updated', droplist)
-    print(result)    
     return userlist
 
 
