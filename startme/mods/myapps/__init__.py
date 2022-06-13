@@ -3,6 +3,7 @@ from locker_client import LockerClient
 from myapps import run
 import os
 from flask_socketio import SocketIO
+from startme import StartMeDisabled
 
 
 class StartMeMyApps(StartMe):
@@ -18,6 +19,15 @@ class StartMeMyApps(StartMe):
 
         self.period = 60
         self.socketio = SocketIO(message_queue="redis://")
+
+        # sanity checks
+        if not self.host:
+            print('set MYAPPS_HOST env variable')
+            raise StartMeDisabled
+        if not self.key:
+            print('set MYAPPS_KEY env variable')
+            raise StartMeDisabled
+
 
         self.locker = LockerClient(host=self.host, key=self.key, insecure=self.insecure)
 

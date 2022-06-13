@@ -23,7 +23,7 @@ def generate_data_files(appname, data_dirs):
 
 setup(
     name='locker-myapps',
-    version='0.0.2',
+    version='0.0.3',
     scripts=['bin/myapps'],
     packages=[
         'myapps',

@@ -32,8 +32,7 @@ def gen_key(length=40):
 
 
 def run(locker):
-    log.debug("Run...")
-    print("Run!", locker)
+    log.debug(f"Run... {locker}")
     flags = locker.get_flags('/var/flags.json', 'updated')
     userlist = set()
 
