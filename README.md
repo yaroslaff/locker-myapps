@@ -12,6 +12,7 @@ pip3 install git+https://github.com/yaroslaff/locker-myapps
 
 If [startme](https://github.com/yaroslaff/startme) is installed inside locker virtualenv, it wull be started automatically with startme. Add myapps variables to `/etc/default/startme-locker` like this:
 ~~~
+STARTME_HOOK=redis
 MYAPPS_HOST=myapps.l.www-security.com
 MYAPPS_KEY=MySecretKey
 ~~~
@@ -58,9 +59,15 @@ Add your website URL to `origins`: `locker-admin edit etc/options.json`. Example
 ~~~
 {
     "origins": [
-	    "http://localhost:8000",
-	    "http://apps.ll.www-security.net:8000"
-    ]
+        "http://localhost:8000",
+        "https://myapps.www-security.com"
+    ],
+    "flag-options": {
+        "flags.json": {
+            "notify": "redis:publish",
+	        "data": "StartMeMyApps"
+        }
+    }
 }
 ~~~
 Make sure there MUST be NO trailing slash in origins.
