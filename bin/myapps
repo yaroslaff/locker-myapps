@@ -68,6 +68,7 @@ def get_args():
 def main():
 
     global locker, log
+    print("PYTHONPATH:", os.getenv('PYTHONPATH'))
 
     args = get_args()
 

@@ -31,7 +31,7 @@ def gen_key(length=40):
     return key
 
 
-def run(locker):
+def run():
     print(f"Run... {locker}")
     flags = locker.get_flags('/var/flags.json', 'updated')
     userlist = set()
@@ -42,7 +42,7 @@ def run(locker):
 
         # get requests
         r = locker.get(f'/home/{u}/rw/requests.json')
-        create_requests = r.json()
+        cmd_requests = r.json()
 
         # get app list
         try:
@@ -53,25 +53,38 @@ def run(locker):
         else:
             applist = r.json()
 
-        for req in create_requests:
+        for req in cmd_requests:
+            print("REQUEST:", req)
             app_name = req['name'].lower()
+            cmd = req['command']
 
-            print(f"Create app {app_name}")
+            if cmd == 'create_app':
+                print(f"Create app {u}:{app_name}")
 
-            new_key = gen_key()
-            rc = subprocess.run(['locker-admin','create', u, app_name, '--key', new_key])
-            print(rc)
-            
-            app = {
-                'name': app_name,
-                'status': 'created',
-                'created_timestamp': int(time.time()),
-                'created': datetime.datetime.now().strftime('%Y/%m/%d'),
-                'subtitle': 'New application',
-                'details': f'Created with initial key: {new_key}'
-            }   
+                new_key = gen_key()
+                rc = subprocess.run(['locker-admin','create', u, app_name, '--key', new_key])
+                print(rc)
+                
+                app = {
+                    'name': app_name,
+                    'status': 'created',
+                    'created_timestamp': int(time.time()),
+                    'created': datetime.datetime.now().strftime('%Y/%m/%d'),
+                    'subtitle': 'New application',
+                    'details': f'Created with initial key: {new_key}'
+                }   
 
-            applist[app_name] = app
+                applist[app_name] = app
+            elif cmd == 'delete_app':
+                if app_name in applist:
+                    print(f"Delete app {u}:app_name")
+                    rc = subprocess.run(['locker-admin', 'delete', u, app_name])
+                    del applist[app_name]
+                    print(rc)
+                else:
+                    print(f"Do not see {app_name} in applist")
+            else:
+                print(f"Do not know how to make command {cmd}")
 
         # update create requests
         r = locker.put(f'/home/{u}/rw/requests.json', '[]')
