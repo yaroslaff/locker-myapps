@@ -31,7 +31,7 @@ def gen_key(length=40):
     return key
 
 
-def run():
+def run(locker):
     print(f"Run... {locker}")
     flags = locker.get_flags('/var/flags.json', 'updated')
     userlist = set()
@@ -116,11 +116,11 @@ def loop(host, key, verbose=False, one=False, hook=None, event=None, message=Non
     s = Sleep(hook=hook)
 
     if one:
-        run()
+        run(locker)
     else:
         socketio = SocketIO(message_queue="redis://")
         while True:
-            userlist = run()
+            userlist = run(locker)
             for u in userlist:
                 roomname = room.format(u=u)
                 print(f"notify user {u} in {roomname}")
